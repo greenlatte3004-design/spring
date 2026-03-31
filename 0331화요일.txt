@@ -1,0 +1,194 @@
+MCP
+ㄴ계산기능
+ㄴ파이썬 & 노션
+ㄴ파이썬 & 깃연결
+
+
+SCM형상관리( software configuration management)
+ㄴgit깃(MS사) 
+ㄴsvn(subversion)
+ㄴcvs(concurrent version system)
+
+C:\dongaclass
+  ㄴaaa.txt, bbb.gif, ccc.json 
+   https://github.com/  깃저장고 생성
+   https://github.com/posasi2000/spring.git
+
+C:\dongaclass> git add .
+C:\dongaclass> git commit -m  "2026-03-21 test2"
+C:\dongaclass> git push origin  master
+
+#깃 브런치 만들기
+C:\dongaclass> git branch LGtest
+C:\dongaclass> git branch SKtest
+C:\dongaclass>  
+C:\dongaclass> git checkout LGtest
+C:\dongaclass> git branch 
+C:\dongaclass>
+    ㄴ xxx.txt  yyy.py  zzz.html  
+
+C:\dongaclass> git branch 
+C:\dongaclass> git add .
+C:\dongaclass> git commit -m  "2026-03-21 LGtest브런치"
+C:\dongaclass> git push origin LGtest
+
+
+
+   1) aiAgent 
+   2) agentservice
+  3) aiservice
+   4) airag
+  5) AIrag
+   
+C:\dongablue
+
+
+project이름 원래소스 기술 개인정보
+project이름2 깃연결해서 
+
+*------------------------------------------------------------------------
+*------------------------------------------------------------------------
+mcp구현을 파이썬언어 구현합니다
+ㄴ계산 my_fast~~
+ㄴ노션 & 파이썬 연결
+   노션에서 제공되는 규약을 잘 지켜야 함
+
+파이썬언어로 어플application작성
+다른외부 문서나 외부어플이랑 연동 
+연동을 하려면 규칙=규약=protocol 있어야 하죠
+규칙규약의 연동을  파이썬 코드로 기술 
+
+
+
+리눅스 & 도커 개념
+LLM & 랭체인(RAG접근, 챗봇,랭그래프,랭스미드,랭agent)
+공공데이터(에어코리아, 출입국관광입국) ---> mcp시작
+mcp(파이썬 & 공공데이터 연동) 목요일실습 api비교 
+mcp(파이썬 & 구글노션 연동)  .env기술 2번라인 NOTION_PAGE_ID
+mcp(파이썬 & 클로드 연동 & 무료)
+
+순서1] 구글 노션 가입
+.env기술 2번라인 NOTION_PAGE_ID 수정
+노션이동 새페이지 작성후  한글이름으로 된(새페이지)
+
+순서2] .env기술 2번라인
+C:~~> ollama pull  granite4:latest
+(.venv)C:~~> ollama pull  granite4:latest
+
+순서3] mcp_server.py문서 완성
+
+@mcp.tool()
+async def fetch_notion_content() -> str:
+    """노션 페이지의 텍스트 내용을 읽어옵니다."""
+    url = f"https://api.notion.com/v1/blocks/{NOTION_PAGE_ID}/children"
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",  #OAuth2방식 & Bearer방식 
+        "Notion-Version": "2026-03-11",
+    }
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    lines = [
+        b["paragraph"]["rich_text"][0]["plain_text"]
+        for b in data.get("results", [])
+        if b["type"] == "paragraph" and b["paragraph"]["rich_text"]
+    ]
+    return "\n".join(lines) if lines else "내용 없음"
+
+#가장 최초 버젼 2021-05-13 ~~ 2025-01-01  올해 2026년  2026-03-11
+@mcp.tool()
+async def add_image_to_notion(image_url: str) -> str:
+    """
+    노션 페이지에 외부 이미지(URL)를 추가합니다.
+    image_url: 추가할 이미지의 공개 HTTP URL
+    """
+    url = f"https://api.notion.com/v1/blocks/{NOTION_PAGE_ID}/children"
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Notion-Version": "2026-03-11",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "children": [
+            {
+                "object": "block",
+                "type": "image",
+                "image": {"type": "external", "external": {"url": image_url}},
+            }
+        ]
+    }
+    response = requests.patch(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        return f"이미지 삽입 성공: {image_url}"
+    return f"이미지 삽입 실패: {response.text}"
+
+
+# mcp_host.py문서  임포트
+import asyncio
+import os
+import sys
+from dotenv import load_dotenv
+
+from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.tools import tool
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+load_dotenv()
+
+
+동기는 요청 -> 기다려서 완료 -> 다음처리
+비동기는 요청 -> bbb()기다리지 않고 다른작업처리 -> 다른작업처리후 bbb()완료 
+
+동기처리/비동기처리  async/await설명 
+동기처리 aaa()처리 1350라인   bbb()처리 20분소요    ccc()처리 인증처리구현 
+             인증처리구현 ccc()호출하기 위해서 aaa(), bbb() 다 끝날때까지 기다려서 처리 
+
+비동기처리 async/await키워드가 비동기처리임을 인식해서 작업시간이 오래 걸리는 작업을 기다리는동안
+  다른작업도 동시에 처리할수 있는 기능 (python, javascript, nodejs, java)
+그래서 비동기처리 제일 많이 사용하는것 구현
+ㄴmcp,api
+ㄴDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
